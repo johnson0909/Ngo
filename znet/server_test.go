@@ -11,7 +11,7 @@ func ClientTest() {
 	fmt.Println("Client Test ... start")
 	time.Sleep(3*time.Second)
 
-	conn, err := net.Dial("tcp", "127.0.0.1:7777")
+	conn, err := net.Dial("tcp", "127.0.0.1:8888")
 	if err != nil {
 		fmt.Println("Client start err, exit!")
 		return 
@@ -36,7 +36,7 @@ func ClientTest() {
 }
 
 //单元测试
-func TestServer(t *testing.T) {
+func main(t *testing.T) {
 	s := NewServer("Ngo v0.1")
 	go ClientTest()
 	s.Serve()  
