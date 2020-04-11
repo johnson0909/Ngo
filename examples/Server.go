@@ -14,7 +14,7 @@ func (this *PingRouter) Handle(request ziface.IRequest) {
 	fmt.Println("Call PingRouter Handle")
 	fmt.Println("recv from client: msgId = ", request.GetMsgID(), ", data = ", string(request.GetData()))
 
-	err := request.GetConnection().SendMsg(1, []byte("ping...ping...ping...\n"))
+	err := request.GetConnection().SendMsg(0, []byte("ping...ping...ping...\n"))
 	if err != nil {
 		fmt.Println("Handle SendMsg err: ", err)
 	}
@@ -29,7 +29,7 @@ func (this *HelloRouter) Handle(request ziface.IRequest) {
 	fmt.Println("Call helloRouter Handle")
 	fmt.Println("recevie from client: msgId = ", request.GetMsgID(), ", data = ", string(request.GetData()))
 
-	err := request.GetConnection().SendMsg(2, []byte("hello Ngo hello router\n"))
+	err := request.GetConnection().SendMsg(1, []byte("hello Ngo hello router\n"))
 	if err != nil {
 		fmt.Println("HelloRouter Handle SendMsg err: ", err)
 	}
