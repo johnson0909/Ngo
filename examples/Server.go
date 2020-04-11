@@ -65,7 +65,9 @@ func main() {
 	//设置hook函数
 	s.SetOnConnStart(DoConnectionBegin)
 	s.SetOnConnStop(DoConnectionLost)
-
+	//配置路由
+	s.AddRouter(0, &PingRouter{})
+	s.AddRouter(1, &HelloRouter{})
 	//开启服务
 	s.Serve()
 }

@@ -82,7 +82,7 @@ func (c *Connection) StartWriter() {
 //读Goroutine, 用于从客户端读取数据
 func (c *Connection) StartReader() {
 	fmt.Println("[Reader Goroutine is running!]")
-	defer fmt.Println(c.RemoteAddr().String(), "[conn reader exit!]")
+	defer fmt.Println(c.RemoteAddr().String(), "[conn Reader exit!]")
 	defer c.Stop()
 	for {
 		//新建拆包对象
@@ -111,7 +111,6 @@ func (c *Connection) StartReader() {
 			}
 		}
 		msg.SetData(data)
-
 		//得到当前客户端请求的Request数据
 		req := Request{
 			conn: c,
