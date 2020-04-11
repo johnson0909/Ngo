@@ -1,14 +1,25 @@
 package znet
 import (
+	"Ngo/utils"
 	"fmt"
 	"net"
 	"Ngo/ziface"
 )
 type Server struct {
+	//服务器名称
 	Name string
 	IPVersion string
 	IP string
 	Port int
+	//当前server的消息管理模块，用来绑定MsgID和对应处理方法
+	msgHandler ziface.IMsgHandle
+	//当前server的链接管理模块
+	ConnMgr ziface.IConnManager
+	//该server链接创建时的hook函数
+	OnConnStart func(conn ziface.IConnection)
+	//该server链接断开时的hook函数
+	OnConnStop func(conn ziface.IConnection)
+
 }
 
 func (s *Server) Start() {
@@ -70,12 +81,49 @@ func (s *Server) Serve() {
 
 }
 
-func NewServer(name string) ziface.IServer {
+//路由功能给当前服务注册一个路由业务方法，供客户端连接处理使用
+func (s *Server) AddRouter(msgId uint32, router ziface.IRouter) {
+	s.msgHandler.AddRouter(msgId, router)
+}
+
+//得到链接管理
+func (s *Server) GetConnMgr() ziface.IConnManager {
+	return s.ConnMgr
+}
+//设置server创建时的hook函数
+func (s *Server) SetOnConnStart(hookFunc func(ziface.IConnection)) {
+	s.OnConnStart = hookFunc
+}
+
+//设置server销毁时的hook函数
+func (s *Server) SetOnConnStop(hookFunc func(ziface.IConnection)) {
+	s.OnConnStop = hookFunc
+}
+
+//调用链接OnConnStart Hook函数
+func (s *Server) CallOnConnStart(conn ziface.IConnection) {
+	if s.OnConnStart != nil {
+		fmt.Println("---> CallOnConnStart ...")
+		s.OnConnStart(conn)
+	}
+}
+
+//调用链接OnConnStop Hook函数
+func (s *Server) CallOnConnStop(conn ziface.IConnection) {
+	if s.OnConnStop != nil {
+		fmt.Println("---> CallOnConnStop ...")
+		s.OnConnStop(conn)
+	}
+}
+
+func NewServer() ziface.IServer {
 	s := &Server{
-		Name: name,
+		Name: utils.GlobalObject.Name,
 		IPVersion: "tcp4",
-		IP: "0.0.0.0",
-		Port: 8888,
+		IP: utils.GlobalObject.Host,
+		Port: utils.GlobalObject.TcpPort,
+		msgHandler: NewMsgHandle(),
+		ConnMgr: NewConnManager(),
 	}
 	return s
 }
