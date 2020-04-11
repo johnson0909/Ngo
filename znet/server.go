@@ -27,40 +27,48 @@ func (s *Server) Start() {
 
 	//开启一个协程等待连接
 	go func() {
-		//获取一个TCP地址
+		//0 启动协程持工作池机制
+		s.msgHandler.StartWorkerPool()
+
+		//1 获取一个TCP地址
 		addr, err := net.ResolveTCPAddr(s.IPVersion, fmt.Sprintf("%s:%d", s.IP, s.Port))
 		if err != nil {
 			fmt.Println("resolve tcp addr error, err: ", err)
 			return 
 		}
-		//监听服务器地址
+		//2 监听服务器地址
 		listener, err := net.ListenTCP(s.IPVersion, addr)
 		if err != nil {
 			fmt.Println("listen err: ", err)
 			return
 		}
+		//监听成功
 		fmt.Println("start Ngo server ", s.Name, " succ! now listenning...")
+		//TODO 自动生成id的方法
+		var cid uint32
+		cid = 0
+		
+		//3 启动server网络连接业务 
 		for {
+			//3.1 阻塞等待网络连接请求
 			conn, err := listener.AcceptTCP()
 			if err != nil {
 				fmt.Println("Accept err: ", err)
 				continue
 			}
-			// 执行业务逻辑, 执行一个读取输入回显的操作
-			go func() {
-				for {
-					buf := make([]byte, 512)
-					cnt, err := conn.Read(buf)
-					if err != nil {
-						fmt.Println("recv buf err: ", err)
-						continue
-					} 
-					if _, err := conn.Write(buf[:cnt]); err != nil {
-						fmt.Println("send buf err: ", err)
-						continue
-					}
-				}
-			}()
+			fmt.Println("Get conn remote addr = ", conn.RemoteAddr().String())
+			//3.2 设置服务器最大连接控制，如果超过最大连接数，那么则关闭此新的连接
+			if s.ConnMgr.Len() >= utils.GlobalObject.MaxConn {
+				conn.Close()
+				continue
+			}
+			
+			//3.3 处理该新连接请求的业务方法，此时应该有handler和conn时绑定的
+			dealConn := NewConnection(s, conn, cid, s.msgHandler)
+			cid++
+			
+			//3.4 启动当前连接的处理业务
+			go dealConn.Start()
 		}
 
 	}()
@@ -69,6 +77,7 @@ func (s *Server) Start() {
 func (s *Server) Stop() {
 	fmt.Println("[Stop] Ngo server , name ", s.Name)
 	//执行关闭相关的逻辑
+	s.ConnMgr.ClearConn()
 }
 
 func (s *Server) Serve() {
