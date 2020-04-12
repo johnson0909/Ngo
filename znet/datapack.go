@@ -35,7 +35,10 @@ func (dp *DataPack) Pack(msg ziface.IMessage) ([]byte, error) {
 	if err := binary.Write(dataBuff, binary.LittleEndian, msg.GetMsgId()); err != nil {
 		return nil, err
 	}
-
+	//写data数据
+	if err := binary.Write(dataBuff, binary.LittleEndian, msg.GetData()); err != nil {
+		return nil, err
+	}
 	return dataBuff.Bytes(), nil
 
 }

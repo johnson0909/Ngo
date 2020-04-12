@@ -14,7 +14,7 @@ func (this *PingRouter) Handle(request ziface.IRequest) {
 	fmt.Println("Call PingRouter Handle")
 	fmt.Println("recv from client: msgId = ", request.GetMsgID(), ", data = ", string(request.GetData()))
 
-	err := request.GetConnection().SendMsg(0, []byte("ping...ping...ping...\n"))
+	err := request.GetConnection().SendBuffMsg(0, []byte("ping...ping...ping..."))
 	if err != nil {
 		fmt.Println("Handle SendMsg err: ", err)
 	}
@@ -29,7 +29,7 @@ func (this *HelloRouter) Handle(request ziface.IRequest) {
 	fmt.Println("Call helloRouter Handle")
 	fmt.Println("recevie from client: msgId = ", request.GetMsgID(), ", data = ", string(request.GetData()))
 
-	err := request.GetConnection().SendMsg(1, []byte("hello Ngo hello router\n"))
+	err := request.GetConnection().SendBuffMsg(1, []byte("hello Ngo hello router"))
 	if err != nil {
 		fmt.Println("HelloRouter Handle SendMsg err: ", err)
 	}
@@ -41,6 +41,7 @@ func DoConnectionBegin(conn ziface.IConnection) {
 	//设置两个链接属性
 	conn.SetProperty("Name", "saulliu")
 	conn.SetProperty("Career", "后台开发")
+	fmt.Println("Set conn Name, Career done!")
 	err := conn.SendMsg(2, []byte("DoConnection BEGIN..."))
 	if err != nil {
 		fmt.Println(err)
