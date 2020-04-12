@@ -145,18 +145,22 @@ func (c *Connection) Stop() {
 	}
 
 	c.isClosed = true
+	//调用连接断开的hook
+	c.TcpServer.CallOnConnStop(c)
+	//关闭socket连接
 	c.Conn.Close()
 	c.ExitBuffChan <- true
+	//将连接从连接管理器删除
 	c.TcpServer.GetConnMgr().Remove(c)
-
+	//关闭该连接的所有管道
 	close(c.ExitBuffChan)
 	close(c.msgBuffChan)
 }
-
+//从当前连接获取原始的TcpConn
 func (c *Connection) GetTCPConnection() *net.TCPConn {
 	return c.Conn
 }
-
+//获取连接id
 func (c *Connection) GetConnID() uint32 {
 	return c.ConnID
 }
