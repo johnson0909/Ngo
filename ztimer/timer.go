@@ -17,7 +17,7 @@ const (
 	SECOND_INTERVAL = 1e3
 	SECOND_SCALES = 60
 
-	TIME_MAX_CAP = 2048		//每个时间轮刻度上挂载定时器的最大个数
+	TIMERS_MAX_CAP = 2048		//每个时间轮刻度上挂载定时器的最大个数
 )
 
 
@@ -31,7 +31,7 @@ type Timer struct {
 
 //返回1970-1-1至今经历的毫秒数
 func UnixMill() int64 {
-	return time.Now().UnixNano/1e6
+	return time.Now().UnixNano()/1e6
 }
 
 /*
