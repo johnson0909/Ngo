@@ -1,6 +1,7 @@
 package cat
 
 import (
+	"strings"
 	"log"
 	"net/http"
 )
@@ -31,13 +32,16 @@ func New() *Engine {
 
 func (group *RouterGroup) Group(prefix string) *RouterGroup {
 	engine := group.engine
-	newGroup := &RouterGroup{
+	newGroup := &RouterGroup{ 
 		prefix: group.prefix + prefix,
 		parent: group,
 		engine: engine,
 	}
 	engine.groups = append(engine.groups, newGroup)
 	return newGroup
+}
+func (group *RouterGroup) Use(middlerwares ...HandlerFunc) {
+	group.middlewares = append(group.middlewares, middlerwares...)
 }
 
 func (group *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
@@ -59,6 +63,13 @@ func (engine *Engine) Run(addr string) (err error) {
 }
 
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	var middlerwares []HandlerFunc
+	for _, group := range engine.groups {
+		if strings.HasPrefix(req.URL.Path, group.prefix) {
+			middlerwares = append(middlerwares, group.middlewares...)
+		}
+	}
 	c := newContext(w, req)
+	c.handlers = middlerwares
 	engine.router.handle(c)
 }

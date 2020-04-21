@@ -11,11 +11,15 @@ type H map[string]interface{}
 type Context struct {
 	Writer http.ResponseWriter
 	Req	*http.Request
-	//请求相关字段
+	//request info
 	Path string
 	Method string
 	Params map[string]string
+	//response info
 	StatusCode int
+	//middleware
+	handlers []HandlerFunc
+	index int
 }
 
 func newContext(w http.ResponseWriter, req *http.Request) *Context {
@@ -24,7 +28,21 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 		Req: req,
 		Path: req.URL.Path,
 		Method: req.Method,
+		index: -1,
 	}
+}
+
+func (c *Context) Next() {
+	c.index++
+	s := len(c.handlers)
+	for ;c.index < s;c.index++ {
+		c.handlers[c.index](c)
+	}
+}
+
+func (c *Context) Fail(code int, err string) {
+	c.index = len(c.handlers)
+	c.JSON(code, H{"message": err})
 }
 
 func (c *Context) Param(key string) string{
